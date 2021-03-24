@@ -58,6 +58,7 @@ myDB(async(client) => {
 });
 // app.listen out here...
 
-app.listen(process.env.PORT || 3000, () => {
-    console.log('Listening on port ' + process.env.PORT);
+app.listen(process.env.PORT, () => {
+    console.log()
+    console.log('Open in browser https:' + process.env.PORT);
 });
