@@ -45,11 +45,17 @@ myDB(async(client) => {
     // Authentication Strategies
     passport.use(
         new LocalStrategy((username, password, done) => {
-            db.collection("users").findOne({ username: username }, (err, user) => {
+            db.collection("users").findOne({ username: username }, (
+                err,
+                user
+            ) => {
                 console.log("User " + username + " attempted to log in.");
-                if (err) return done(err);
-                if (!user) return done(null, false);
-                if (password !== user.password) return done(null, false);
+                if (err)
+                    return done(err);
+                if (!user)
+                    return done(null, false);
+                if (password !== user.password)
+                    return done(null, false);
 
                 return done(null, user);
             });
@@ -65,7 +71,27 @@ myDB(async(client) => {
             done(null, doc);
         });
     });
-    // Be sure to add this...
+    // How to Use Passport Strategies
+    app.route("/").get((req, res) => {
+        res.render(process.cwd() + "/views/pug/index", {
+            title: "Hello",
+            message: "Please login",
+            showLogin: true,
+        });
+    });
+
+    app
+        .route("/login")
+        .post(
+            passport.authenticate("local", { failureRedirect: "/" }),
+            (req, res) => {
+                res.redirect("/profile");
+            }
+        );
+
+    app.route("/profile").get((req, res) => {
+        res.render(process.cwd() + "/views/pug/profile");
+    });
 }).catch((e) => {
     app.route('/').get((req, res) => {
         res.render('pug', { title: e, message: 'Unable to login' });
