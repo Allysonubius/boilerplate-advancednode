@@ -102,6 +102,15 @@ mongo.connect(
                 });
             });
 
+            app.route("/logout").get((req, res) => {
+                req.logout();
+                res.redirect("/");
+            });
+
+            app.use((req, res) => {
+                res.status(400).type("text").send("Not Found");
+            });
+
             app.listen(process.env.PORT, () => {
                 console.log("Listening on localhost:" + process.env.PORT);
             });

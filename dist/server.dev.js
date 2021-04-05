@@ -99,6 +99,13 @@ mongo.connect(process.env.MONGO_URI, {
         username: req.user.username
       });
     });
+    app.route("/logout").get(function (req, res) {
+      req.logout();
+      res.redirect("/");
+    });
+    app.use(function (req, res) {
+      res.status(400).type("text").send("Not Found");
+    });
     app.listen(process.env.PORT, function () {
       console.log("Listening on localhost:" + process.env.PORT);
     });
