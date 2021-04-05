@@ -62,6 +62,13 @@ myDB(async(client) => {
         })
     );
 
+    function ensureAuthenticated(req, res, next) {
+        if (req.isAuthenticated()) {
+            return next();
+        }
+        res.redirect("/");
+    }
+
     // Serialization and deserialization here...
     passport.serializeUser((user, done) => {
         done(null, user._id);
@@ -79,6 +86,7 @@ myDB(async(client) => {
             showLogin: true,
         });
     });
+
 
     app
         .route("/login")
@@ -101,5 +109,5 @@ myDB(async(client) => {
 
 app.listen(process.env.PORT, () => {
     console.log()
-    console.log('Open in browser https:' + process.env.PORT);
+    console.log('Open in browser localhost:' + process.env.PORT);
 });
