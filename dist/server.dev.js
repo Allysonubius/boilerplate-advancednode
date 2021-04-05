@@ -95,7 +95,9 @@ mongo.connect(process.env.MONGO_URI, {
       res.redirect("/profile");
     });
     app.route("/profile").get(ensureAuthenticated, function (req, res) {
-      res.render(process.cwd() + "/views/pug/profile");
+      res.render(process.cwd() + "/views/pug/profile", {
+        username: req.user.username
+      });
     });
     app.listen(process.env.PORT, function () {
       console.log("Listening on localhost:" + process.env.PORT);
