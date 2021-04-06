@@ -16,6 +16,8 @@ var ObjectID = require("mongodb").ObjectID;
 
 var mongo = require("mongodb").MongoClient;
 
+var bcrypt = require("bcrypt");
+
 var app = express();
 
 require("dotenv").config();
@@ -80,6 +82,10 @@ mongo.connect(process.env.MONGO_URI, {
           return done(null, false);
         }
 
+        if (!bcrypt.compareSync(password, user.password)) {
+          return done(null, false);
+        }
+
         return done(null, user);
       });
     }));
@@ -111,6 +117,7 @@ mongo.connect(process.env.MONGO_URI, {
       }, function (err, user) {
         if (err) next(err);
         if (user) return res.redirect("/");
+        var hash = bcrypt.hashSync(req.body.password, 12);
         db.collection("users").insertOne({
           username: req.body.username,
           password: req.body.password
