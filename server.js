@@ -34,12 +34,12 @@ mongo.connect(
         useNewUrlParser: true,
         useUnifiedTopology: true,
     },
-    (err, db) => {
+    (err, client) => {
         if (err) {
             console.log("Database error: " + err);
         } else {
             console.log("Successful database connection");
-
+            const db = client.db("passport");
             passport.serializeUser((user, done) => {
                 done(null, user._id);
             });
@@ -83,7 +83,8 @@ mongo.connect(
                 res.render(process.cwd() + "/views/pug/index", {
                     title: "Home Page",
                     message: "Please login",
-                    showLogin: false,
+                    showLogin: true,
+                    showRegistration: true,
                 });
             });
 
@@ -106,6 +107,31 @@ mongo.connect(
                 req.logout();
                 res.redirect("/");
             });
+
+            app.route("/register").post(
+                (req, res, next) => {
+                    db.collection("users").findOne({ username: req.body.username },
+                        (err, user) => {
+                            if (err) next(err);
+                            if (user) return res.redirect("/");
+
+                            db.collection("users").insertOne({
+                                    username: req.body.username,
+                                    password: req.body.password,
+                                },
+                                (err, doc) => {
+                                    if (err) next(err);
+                                    next(null, doc);
+                                }
+                            );
+                        }
+                    );
+                },
+                passport.authenticate("local", { failureRedirect: "/" }),
+                (req, res, next) => {
+                    res.redirect("/profile");
+                }
+            );
 
             app.use((req, res) => {
                 res.status(400).type("text").send("Not Found");

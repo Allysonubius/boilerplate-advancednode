@@ -38,7 +38,7 @@ app.use(passport.session());
 mongo.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}, function (err, db) {
+}, function (err, client) {
   if (err) {
     console.log("Database error: " + err);
   } else {
@@ -51,6 +51,7 @@ mongo.connect(process.env.MONGO_URI, {
     };
 
     console.log("Successful database connection");
+    var db = client.db("passport");
     passport.serializeUser(function (user, done) {
       done(null, user._id);
     });
@@ -86,7 +87,8 @@ mongo.connect(process.env.MONGO_URI, {
       res.render(process.cwd() + "/views/pug/index", {
         title: "Home Page",
         message: "Please login",
-        showLogin: false
+        showLogin: true,
+        showRegistration: true
       });
     });
     app.route("/login").post(passport.authenticate("local", {
@@ -102,6 +104,25 @@ mongo.connect(process.env.MONGO_URI, {
     app.route("/logout").get(function (req, res) {
       req.logout();
       res.redirect("/");
+    });
+    app.route("/register").post(function (req, res, next) {
+      db.collection("users").findOne({
+        username: req.body.username
+      }, function (err, user) {
+        if (err) next(err);
+        if (user) return res.redirect("/");
+        db.collection("users").insertOne({
+          username: req.body.username,
+          password: req.body.password
+        }, function (err, doc) {
+          if (err) next(err);
+          next(null, doc);
+        });
+      });
+    }, passport.authenticate("local", {
+      failureRedirect: "/"
+    }), function (req, res, next) {
+      res.redirect("/profile");
     });
     app.use(function (req, res) {
       res.status(400).type("text").send("Not Found");
