@@ -32,11 +32,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongo.connect(
-    process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    },
-    (err, client) => {
+    process.env.MONGO_URI, (err, client) => {
         if (err) {
             console.log("Database error: " + err);
         } else {
@@ -46,13 +42,15 @@ mongo.connect(
             auth(app, db);
             routes(app, db);
 
-            app.use((req, res) => {
-                res.status(400).type("text").send("Not Found");
-            });
+            app
+                .use((req, res) => {
+                    res.status(400).type("text").send("Not Found");
+                });
 
-            app.listen(process.env.PORT, () => {
-                console.log("Listening on localhost:" + process.env.PORT);
-            });
+            app
+                .listen(process.env.PORT, () => {
+                    console.log("Listening on localhost:" + process.env.PORT);
+                });
         }
     }
 );
