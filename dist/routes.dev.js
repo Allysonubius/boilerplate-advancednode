@@ -5,6 +5,8 @@ module.exports = function (app, db) {
 
   var bcrypt = require("bcrypt");
 
+  var session = require("express-session");
+
   function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {
       return next();

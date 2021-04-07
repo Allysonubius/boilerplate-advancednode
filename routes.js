@@ -1,6 +1,7 @@
 module.exports = function(app, db) {
     const passport = require("passport");
     const bcrypt = require("bcrypt");
+    const session = require("express-session");
 
     function ensureAuthenticated(req, res, next) {
         if (req.isAuthenticated()) {
@@ -90,4 +91,5 @@ module.exports = function(app, db) {
                 res.redirect("profile");
             }
         );
+
 };

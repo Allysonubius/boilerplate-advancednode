@@ -32,7 +32,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongo.connect(
-    process.env.MONGO_URI, (err, client) => {
+    process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => {
         if (err) {
             console.log("Database error: " + err);
         } else {

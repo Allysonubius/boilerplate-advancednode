@@ -35,7 +35,10 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-mongo.connect(process.env.MONGO_URI, function (err, client) {
+mongo.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}, function (err, client) {
   if (err) {
     console.log("Database error: " + err);
   } else {
