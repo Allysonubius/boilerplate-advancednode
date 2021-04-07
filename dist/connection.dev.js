@@ -25,25 +25,28 @@ function main(callback) {
         case 3:
           console.log();
           console.log('Database connected');
-          _context.next = 7;
+          console.log();
+          _context.next = 8;
           return regeneratorRuntime.awrap(callback(client));
 
-        case 7:
-          _context.next = 13;
+        case 8:
+          _context.next = 16;
           break;
 
-        case 9:
-          _context.prev = 9;
+        case 10:
+          _context.prev = 10;
           _context.t0 = _context["catch"](0);
+          console.log();
           console.error('Database disconected' + _context.t0);
+          console.log();
           throw new Error('Unable to Connect to Database');
 
-        case 13:
+        case 16:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 9]]);
+  }, null, null, [[0, 10]]);
 }
 
 module.exports = main;

@@ -9,9 +9,12 @@ async function main(callback) {
         await client.connect();
         console.log()
         console.log('Database connected')
+        console.log();
         await callback(client);
     } catch (e) {
+        console.log();
         console.error('Database disconected' + e);
+        console.log();
         throw new Error('Unable to Connect to Database')
     }
 }
