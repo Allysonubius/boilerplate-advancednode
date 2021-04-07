@@ -41,18 +41,18 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 mongo(function _callee(client) {
-  var myDataBase;
+  var MongoDB;
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
           _context.next = 2;
-          return regeneratorRuntime.awrap(client.db('database').collection('users'));
+          return regeneratorRuntime.awrap(client.db('passport').collection('users'));
 
         case 2:
-          myDataBase = _context.sent;
-          routes(app, myDataBase);
-          auth(app, myDataBase);
+          MongoDB = _context.sent;
+          routes(app, MongoDB);
+          auth(app, MongoDB);
           io.on('connection', function (socket) {
             console.log('A user has connected');
           });

@@ -61,12 +61,13 @@ module.exports = function (app, databaseMongo) {
   }), function (req, res, next) {
     res.redirect('/profile');
   });
-  app.route('/auth/github').get(passport.authenticate('github'));
+  app.route('/auth/github').get(passport.authenticate('github'), function (req, res) {
+    res.redirect('profile');
+  });
   app.route('/auth/github/callback').get(passport.authenticate('github', {
     failureRedirect: '/'
   }), function (req, res) {
-    req.session.user_id = req.user.id;
-    res.redirect('/chat');
+    res.redirect('profile');
   });
   app.use(function (req, res, next) {
     res.status(404).type('text').send('Not Found');

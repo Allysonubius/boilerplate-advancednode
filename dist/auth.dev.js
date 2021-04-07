@@ -24,7 +24,7 @@ module.exports = function (app, MongoDB) {
     });
   });
   passport.use(new LocalStrategy(function (username, password, done) {
-    databaseMongo.findOne({
+    MongoDB.findOne({
       username: username
     }, function (err, user) {
       console.log('User ' + username + ' attempted to log in.');

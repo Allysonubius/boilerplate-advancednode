@@ -30,10 +30,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongo(async(client) => {
-    const myDataBase = await client.db('database').collection('users');
+    const MongoDB = await client.db('passport').collection('users');
 
-    routes(app, myDataBase);
-    auth(app, myDataBase);
+    routes(app, MongoDB);
+    auth(app, MongoDB);
 
     io.on('connection', (socket) => {
         console.log('A user has connected');
