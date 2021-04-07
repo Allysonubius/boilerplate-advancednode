@@ -1,16 +1,16 @@
-"use strict";
+'use strict';
 
-var express = require("express");
+require('dotenv').config();
 
-var bodyParser = require("body-parser");
+var express = require('express');
 
-var fccTesting = require("./freeCodeCamp/fcctesting.js");
+var mongo = require('./connection');
 
-var session = require("express-session");
+var fccTesting = require('./freeCodeCamp/fcctesting.js');
 
-var passport = require("passport");
+var session = require('express-session');
 
-var mongo = require("mongodb").MongoClient;
+var passport = require('passport');
 
 var routes = require('./routes');
 
@@ -18,39 +18,60 @@ var auth = require('./auth.js');
 
 var app = express();
 
-require("dotenv").config();
+var http = require('http').createServer(app);
 
-fccTesting(app); //For FCC testing purposes
+var io = require('socket.io')(http);
 
-app.use("/public", express["static"](process.cwd() + "/public"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
+app.set('view engine', 'pug');
+fccTesting(app); // For fCC testing purposes
+
+app.use('/public', express["static"](process.cwd() + '/public'));
+app.use(express.json());
+app.use(express.urlencoded({
   extended: true
 }));
-app.set("view engine", "pug");
 app.use(session({
-  secret: "abc",
+  secret: process.env.SESSION_SECRET,
   resave: true,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    secure: false
+  }
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-mongo.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}, function (err, client) {
-  if (err) {
-    console.log("Database error: " + err);
-  } else {
-    console.log("Successful database connection");
-    var db = client.db("passport");
-    auth(app, db);
-    routes(app, db);
-    app.use(function (req, res) {
-      res.status(400).type("text").send("Not Found");
+mongo(function _callee(client) {
+  var myDataBase;
+  return regeneratorRuntime.async(function _callee$(_context) {
+    while (1) {
+      switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return regeneratorRuntime.awrap(client.db('database').collection('users'));
+
+        case 2:
+          myDataBase = _context.sent;
+          routes(app, myDataBase);
+          auth(app, myDataBase);
+          io.on('connection', function (socket) {
+            console.log('A user has connected');
+          });
+
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }
+  });
+})["catch"](function (e) {
+  app.route('/').get(function (req, res) {
+    res.render('pug', {
+      title: e,
+      message: 'Unable to login'
     });
-    app.listen(process.env.PORT, function () {
-      console.log("Listening on localhost:" + process.env.PORT);
-    });
-  }
+  });
+});
+http.listen(process.env.PORT || 3000, function () {
+  console.log();
+  console.log('Open in web browser localhost:' + process.env.PORT);
 });

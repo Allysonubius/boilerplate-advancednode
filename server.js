@@ -1,56 +1,50 @@
-"use strict";
-
-const express = require("express");
-const bodyParser = require("body-parser");
-const fccTesting = require("./freeCodeCamp/fcctesting.js");
-const session = require("express-session");
-
-const passport = require("passport");
-const mongo = require("mongodb").MongoClient;
-
+'use strict';
+require('dotenv').config();
+const express = require('express');
+const mongo = require('./connection');
+const fccTesting = require('./freeCodeCamp/fcctesting.js');
+const session = require('express-session');
+const passport = require('passport');
 const routes = require('./routes');
 const auth = require('./auth.js');
 
 const app = express();
-require("dotenv").config();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
 
-fccTesting(app); //For FCC testing purposes
-app.use("/public", express.static(process.cwd() + "/public"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.set('view engine', 'pug');
 
-app.set("view engine", "pug");
+fccTesting(app); // For fCC testing purposes
+app.use('/public', express.static(process.cwd() + '/public'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(
-    session({
-        secret: "abc",
-        resave: true,
-        saveUninitialized: true,
-    })
-);
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+    cookie: { secure: false },
+}));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongo.connect(
-    process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true }, (err, client) => {
-        if (err) {
-            console.log("Database error: " + err);
-        } else {
-            console.log("Successful database connection");
-            const db = client.db("passport");
+mongo(async(client) => {
+    const myDataBase = await client.db('database').collection('users');
 
-            auth(app, db);
-            routes(app, db);
+    routes(app, myDataBase);
+    auth(app, myDataBase);
 
-            app
-                .use((req, res) => {
-                    res.status(400).type("text").send("Not Found");
-                });
+    io.on('connection', (socket) => {
+        console.log('A user has connected');
+    });
+}).catch((e) => {
+    app.route('/').get((req, res) => {
+        res.render('pug', { title: e, message: 'Unable to login' });
+    });
+});
 
-            app
-                .listen(process.env.PORT, () => {
-                    console.log("Listening on localhost:" + process.env.PORT);
-                });
-        }
-    }
-);
+http.listen(process.env.PORT || 3000, () => {
+    console.log();
+    console.log('Open in web browser localhost:' + process.env.PORT);
+});

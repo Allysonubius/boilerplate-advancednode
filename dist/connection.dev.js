@@ -6,43 +6,44 @@ require('dotenv').config();
 var _require = require('mongodb'),
     MongoClient = _require.MongoClient;
 
+var URI = process.env.MONGO_URI; // Declare MONGO_URI in your .env file
+
+var client = new MongoClient('mongodb+srv://allyson:78451278@cluster0.n5kla.mongodb.net/teste_05?retryWrites=true&w=majority', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+});
+
 function main(callback) {
-  var URI, client;
   return regeneratorRuntime.async(function main$(_context) {
     while (1) {
       switch (_context.prev = _context.next) {
         case 0:
-          URI = process.env.MONGO_URI; // Declare MONGO_URI in your .env file
-
-          client = new MongoClient('mongodb+srv://allyson:78451278@cluster0.n5kla.mongodb.net/teste_05?retryWrites=true&w=majority');
-          _context.prev = 2;
-          _context.next = 5;
+          _context.prev = 0;
+          _context.next = 3;
           return regeneratorRuntime.awrap(client.connect());
 
-        case 5:
+        case 3:
           console.log();
-          console.log('Database connected'); // Make the appropriate DB calls
-
-          _context.next = 9;
+          console.log('Database connected');
+          _context.next = 7;
           return regeneratorRuntime.awrap(callback(client));
 
-        case 9:
-          _context.next = 15;
+        case 7:
+          _context.next = 13;
           break;
 
-        case 11:
-          _context.prev = 11;
-          _context.t0 = _context["catch"](2);
-          // Catch any errors
+        case 9:
+          _context.prev = 9;
+          _context.t0 = _context["catch"](0);
           console.error('Database disconected' + _context.t0);
           throw new Error('Unable to Connect to Database');
 
-        case 15:
+        case 13:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[2, 11]]);
+  }, null, null, [[0, 9]]);
 }
 
 module.exports = main;

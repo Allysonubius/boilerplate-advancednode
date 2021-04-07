@@ -1,73 +1,82 @@
 "use strict";
 
-module.exports = function (app, db) {
-  var passport = require("passport");
+var passport = require('passport');
 
-  var bcrypt = require("bcrypt");
+var bcrypt = require('bcrypt');
 
-  var session = require("express-session");
-
-  function ensureAuthenticated(req, res, next) {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-
-    res.redirect("/");
-  }
-
-  app.use(session({
-    secret: process.env.MONGO_URI,
-    resave: true,
-    saveUninitialized: true
-  }));
-  app.route("/").get(function (req, res) {
-    res.render(process.cwd() + "/views/pug/index", {
-      title: "Home Page",
-      message: "Please login",
+module.exports = function (app, databaseMongo) {
+  app.route('/').get(function (req, res) {
+    // Change the response to render the Pug template
+    res.render('pug', {
+      title: 'Connected to Database',
+      message: 'Please login',
       showLogin: true,
-      showRegistration: true
+      showRegistration: true,
+      showSocialAuth: true
     });
   });
-  app.route("/login").post(passport.authenticate("local", {
-    failureRedirect: "/"
+  app.route('/login').post(passport.authenticate('local', {
+    failureRedirect: '/'
   }), function (req, res) {
-    res.redirect("/profile");
+    res.redirect('/profile');
   });
-  app.route("/profile").get(ensureAuthenticated, function (req, res) {
-    res.render(process.cwd() + "/views/pug/profile", {
+  app.route('/profile').get(ensureAuthenticated, function (req, res) {
+    res.render('pug/profile', {
       username: req.user.username
     });
   });
-  app.route("/logout").get(function (req, res) {
-    req.logout();
-    res.redirect("/");
+  app.route('/chat').get(ensureAuthenticated, function (req, res) {
+    res.render('pug/chat', {
+      user: req.user
+    });
   });
-  app.route("/register").post(function (req, res, next) {
-    db.collection("users").findOne({
+  app.route('/logout').get(function (req, res) {
+    req.logout();
+    res.redirect('/');
+  });
+  app.route('/register').post(function (req, res, next) {
+    var hash = bcrypt.hashSync(req.body.password, 12);
+    databaseMongo.findOne({
       username: req.body.username
     }, function (err, user) {
-      if (err) next(err);
-      if (user) return res.redirect("/");
-      var hash = bcrypt.hashSync(req.body.password, 12);
-      db.collection("users").insertOne({
-        username: req.body.username,
-        password: hash
-      }, function (err, doc) {
-        if (err) next(err);
-        next(null, doc);
-      });
+      if (err) {
+        next(err);
+      } else if (user) {
+        res.redirect('/');
+      } else {
+        databaseMongo.insertOne({
+          username: req.body.username,
+          password: hash
+        }, function (err, doc) {
+          if (err) {
+            res.redirect('/');
+          } else {
+            next(null, doc.ops[0]);
+          }
+        });
+      }
     });
-  }, passport.authenticate("local", {
-    failureRedirect: "/"
+  }, passport.authenticate('local', {
+    failureRedirect: '/'
   }), function (req, res, next) {
-    res.redirect("/profile");
+    res.redirect('/profile');
   });
-  app.route("/auth/github").get(passport.authenticate("github"), function (req, res) {
-    res.redirect("profile");
-  });
-  app.route("/auth/github/callback").get(passport.authenticate("github", {
-    failureRedirect: "/"
+  app.route('/auth/github').get(passport.authenticate('github'));
+  app.route('/auth/github/callback').get(passport.authenticate('github', {
+    failureRedirect: '/'
   }), function (req, res) {
-    res.redirect("profile");
+    req.session.user_id = req.user.id;
+    res.redirect('/chat');
+  });
+  app.use(function (req, res, next) {
+    res.status(404).type('text').send('Not Found');
   });
 };
+
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+
+  res.redirect('/');
+}

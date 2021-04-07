@@ -1,30 +1,30 @@
 "use strict";
 
-module.exports = function (app, db) {
-  require('dotenv').config();
+require('dotenv').config();
 
-  var passport = require("passport");
+var passport = require("passport");
 
-  var LocalStrategy = require("passport-local");
+var LocalStrategy = require("passport-local");
 
-  var ObjectID = require("mongodb").ObjectID;
+var ObjectID = require("mongodb").ObjectID;
 
-  var bcrypt = require("bcrypt");
+var bcrypt = require("bcrypt");
 
-  var GitHubStrategy = require("passport-github").Strategy;
+var GitHubStrategy = require("passport-github").Strategy;
 
+module.exports = function (app, MongoDB) {
   passport.serializeUser(function (user, done) {
     done(null, user._id);
   });
   passport.deserializeUser(function (id, done) {
-    db.collection("users").findOne({
+    MongoDB.collection("users").findOne({
       _id: new ObjectID(id)
     }, function (err, doc) {
       done(null, doc);
     });
   });
   passport.use(new LocalStrategy(function (username, password, done) {
-    myDataBase.findOne({
+    databaseMongo.findOne({
       username: username
     }, function (err, user) {
       console.log('User ' + username + ' attempted to log in.');
@@ -51,7 +51,7 @@ module.exports = function (app, db) {
   }, function (accessToken, refreshToken, profile, cb) {
     console.log(profile); //Database logic here with callback containing our user object
 
-    db.findAndModify({
+    MongoDB.findAndModify({
       id: profile.id
     }, {}, {
       $setOnInsert: {

@@ -1,26 +1,25 @@
-module.exports = function(app, db) {
-    require('dotenv').config();
-    const passport = require("passport");
-    const LocalStrategy = require("passport-local");
-    const ObjectID = require("mongodb").ObjectID;
-    const bcrypt = require("bcrypt");
-    const GitHubStrategy = require("passport-github").Strategy;
+require('dotenv').config();
+const passport = require("passport");
+const LocalStrategy = require("passport-local");
+const ObjectID = require("mongodb").ObjectID;
+const bcrypt = require("bcrypt");
+const GitHubStrategy = require("passport-github").Strategy;
 
-    passport.serializeUser((user, done) => {
-        done(null, user._id);
-    });
-
+module.exports = function(app, MongoDB) {
+    passport
+        .serializeUser((user, done) => {
+            done(null, user._id);
+        });
     passport
         .deserializeUser((id, done) => {
-            db.collection("users").findOne({ _id: new ObjectID(id) }, (err, doc) => {
+            MongoDB.collection("users").findOne({ _id: new ObjectID(id) }, (err, doc) => {
                 done(null, doc);
             });
         });
-
     passport
         .use(new LocalStrategy(
             function(username, password, done) {
-                myDataBase.findOne({ username: username }, function(err, user) {
+                databaseMongo.findOne({ username: username }, function(err, user) {
                     console.log('User ' + username + ' attempted to log in.');
                     if (err) { return done(err); }
                     if (!user) { return done(null, false); }
@@ -29,7 +28,6 @@ module.exports = function(app, db) {
                 });
             }
         ));
-
     passport
         .use(
             new GitHubStrategy({
@@ -40,7 +38,7 @@ module.exports = function(app, db) {
                 function(accessToken, refreshToken, profile, cb) {
                     console.log(profile);
                     //Database logic here with callback containing our user object
-                    db.findAndModify({
+                    MongoDB.findAndModify({
                             id: profile.id
                         }, {}, {
                             $setOnInsert: {
