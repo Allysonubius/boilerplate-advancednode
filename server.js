@@ -30,12 +30,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongo(async(client) => {
-    const MongoDB = await client.db('passport').collection('users');
+    const myDataBase = await client.db('database').collection('users');
 
-    routes(app, MongoDB);
-    auth(app, MongoDB);
+    routes(app, myDataBase);
+    auth(app, myDataBase);
 
+    let currentUsers = 0;
     io.on('connection', (socket) => {
+        ++currentUsers;
+        io.emit('user count', currentUsers);
         console.log('A user has connected');
     });
 }).catch((e) => {
