@@ -1,8 +1,9 @@
 // This file's full path is /public/client.js 
-Do$(document).ready(function() {
+$(document).ready(function() {
     /*global io*/
     let socket = io();
-    socket.on('user count', function(data) {
+    socket
+        .on('user count', function(data) {
             console.log(data);
         })
         // Form submittion with new message in field with id 'm'
