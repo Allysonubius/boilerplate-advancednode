@@ -52,8 +52,21 @@ mongo(async(client) => {
     let currentUsers = 0;
     io.on('connection', (socket) => {
         ++currentUsers;
-        io.emit('user count', currentUsers);
+        io.emit('user count', {
+            name: socket.request.user.name,
+            currentUsers,
+            connected: true
+        });
         console.log('A user has connected');
+        socket.on('disconnected', () => {
+            console.log('A user has disconnected');
+            --currentUsers;
+            io.emit('user', {
+                name: socket.request.user.name,
+                currentUsers,
+                connected: false
+            });
+        });
     });
 }).catch((e) => {
     app.route('/').get((req, res) => {
