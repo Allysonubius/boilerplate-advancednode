@@ -11,9 +11,9 @@ const auth = require('./auth.js');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
-
 const passportSocketIo = require('passport.socketio');
 const cookieParser = require('cookie-parser');
+const sessionStore = new session.MemoryStore();
 
 app.set('view engine', 'pug');
 
@@ -27,6 +27,8 @@ app.use(session({
     resave: true,
     saveUninitialized: true,
     cookie: { secure: false },
+    key: 'express.sid',
+    store: sessionStore,
 }));
 
 app.use(passport.initialize());
@@ -44,7 +46,7 @@ io.use(
 );
 
 mongo(async(client) => {
-    const myDataBase = await client.db('database').collection('users');
+    const myDataBase = await client.db('passport').collection('users');
 
     routes(app, myDataBase);
     auth(app, myDataBase);
@@ -56,6 +58,9 @@ mongo(async(client) => {
             name: socket.request.user.name,
             currentUsers,
             connected: true
+        });
+        socket.on('chat message', (message) => {
+            io.emit('chat message', { name: socket.request.user.name, message });
         });
         console.log('A user has connected');
         socket.on('disconnected', () => {
@@ -86,7 +91,7 @@ function onAuthorizeFail(data, message, error, accept) {
     accept(null, false);
 }
 
-http.listen(process.env.PORT || 3000, () => {
+http.listen(process.env.PORT, () => {
     console.log();
-    console.log('Open in web browser localhost:' + process.env.PORT);
+    console.log('Open in web browser https://localhost:' + process.env.PORT);
 });
