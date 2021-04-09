@@ -1,7 +1,7 @@
 # Node modules
 node_modules
 # Informations privates
-.env
+
 # VsCode test
 .vscode
 # Info Test Debug DIST
