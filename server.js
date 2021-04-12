@@ -58,7 +58,11 @@ MongoDB(async (client) => {
     socket.on("disconnect", () => {
       console.log("A user has disconnected");
       --currentUsers;
-      io.emit("user count", currentUsers);
+      io.emit("user", {
+        name: socket.request.user.name,
+        currentUsers,
+        connected: false
+      });
     });
   });
 }).catch((e) => {
